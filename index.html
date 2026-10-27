@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>chemlab.ai | Cheminformatics Virtual Laboratory - Sanjey Varshan K (RA2611026050040)</title>
+  <meta name="description" content="chemlab.ai: Next-generation Cheminformatics Virtual Laboratory created by Sanjey Varshan K (RA2611026050040). Featuring interactive 3D WebGL molecular conformers, dual ChemSpider (RSC) & PubChem (NIH) integration, IUPAC nomenclature engine, and downloadable PDF dossiers." />
+  <meta name="author" content="Sanjey Varshan K (RA2611026050040)" />
+  <meta name="application-name" content="chemlab.ai" />
+  <meta property="og:title" content="chemlab.ai | Cheminformatics Virtual Laboratory" />
+  <meta property="og:site_name" content="chemlab.ai" />
+  <meta property="og:description" content="chemlab.ai - Dual ChemSpider & PubChem Registry Intelligence by Sanjey Varshan K (Reg. No: RA2611026050040)" />
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- 3Dmol.js for WebGL Molecular Graphics -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/3Dmol/2.0.4/3Dmol-min.js"></script>
+
+  <!-- jsPDF for Client-Side PDF Dossier Generation -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <!-- Ambient Glow Effects -->
+  <div class="ambient-glow glow-top-left"></div>
+  <div class="ambient-glow glow-top-right"></div>
+  <div class="ambient-glow glow-bottom-center"></div>
+
+  <!-- Top Identity & Student Accreditation Bar -->
+  <aside class="top-identity-bar" aria-label="Researcher Identification">
+    <div class="identity-container">
+      <div class="identity-left">
+        <span class="identity-pulse-dot"></span>
+        <span class="identity-role"><i data-lucide="graduation-cap" class="identity-icon"></i> Student / Researcher:</span>
+        <strong class="identity-name">Sanjey Varshan K</strong>
+        <span class="identity-separator">&bull;</span>
+        <span class="identity-label">Register No:</span>
+        <code class="identity-reg">RA2611026050040</code>
+      </div>
+      <div class="identity-right">
+        <span class="identity-portal-badge">
+          <i data-lucide="shield-check" class="identity-icon"></i>
+          <span>Official <strong class="domain-text">chemlab.ai</strong> Platform</span>
+        </span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main Container -->
+  <div class="app-layout">
+    
+    <!-- Top Navigation Bar -->
+    <header class="app-header">
+      <div class="header-brand">
+        <div class="brand-logo">
+          <i data-lucide="atom" class="logo-icon"></i>
+          <span class="logo-pulse"></span>
+        </div>
+        <div>
+          <h1 class="brand-title">chemlab<span class="title-accent">.ai</span></h1>
+          <p class="brand-subtitle">Cheminformatics Virtual Laboratory &middot; Dual Registry Engine</p>
+        </div>
+      </div>
+
+      <!-- Header Badges with Student ID and Database Badges -->
+      <div class="header-badges">
+        <!-- Student Identity Badge -->
+        <div class="badge badge-student" id="student-badge" title="Developer & Student Registration">
+          <i data-lucide="user-check" class="badge-icon student-icon"></i>
+          <div class="student-info-col">
+            <span class="student-name">Sanjey Varshan K</span>
+            <span class="student-reg">RA2611026050040</span>
+          </div>
+        </div>
+
+        <div class="badge badge-chemspider" id="chemspider-status-badge">
+          <span class="badge-dot dot-emerald"></span>
+          <i data-lucide="network" class="badge-icon"></i>
+          <span>ChemSpider Connected</span>
+        </div>
+        <div class="badge badge-pubchem" id="pubchem-status-badge">
+          <span class="badge-dot dot-cyan"></span>
+          <i data-lucide="database" class="badge-icon"></i>
+          <span>PubChem Connected</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Search & Command Center -->
+    <section class="command-center">
+      <div class="search-panel">
+        <form id="search-form" class="search-form" onsubmit="event.preventDefault(); window.handleSearch();">
+          <div class="search-input-wrapper">
+            <i data-lucide="search" class="search-icon"></i>
+            <input 
+              type="text" 
+              id="molecule-search-input" 
+              class="search-input" 
+              placeholder="Search across ChemSpider & PubChem by Name (e.g. Aspirin, Remdesivir), SMILES, CID, or CSID..." 
+              autocomplete="off"
+            />
+            <button type="button" id="clear-search-btn" class="clear-btn" title="Clear search" onclick="window.clearSearch()">
+              <i data-lucide="x"></i>
+            </button>
+          </div>
+          <button type="submit" id="search-action-btn" class="btn btn-primary search-submit-btn">
+            <i data-lucide="sparkles"></i>
+            <span>Analyze Molecule</span>
+          </button>
+        </form>
+
+        <!-- Quick Preset Molecules Chips -->
+        <div class="presets-container">
+          <span class="presets-label"><i data-lucide="bookmark"></i> Quick Bench:</span>
+          <div class="preset-chips" id="preset-chips">
+            <!-- Dynamically populated chips -->
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Main Dynamic Content Grid -->
+    <main class="workbench-grid" id="workbench-main">
+      
+      <!-- Left Column: Visualizers (3D Conformer & 2D Topology & Dual Registry) -->
+      <section class="visualizer-column">
+        
+        <!-- 3D Conformer Interactive Card -->
+        <div class="lab-card card-3d">
+          <div class="card-header">
+            <div class="card-title-group">
+              <i data-lucide="box" class="card-title-icon"></i>
+              <div>
+                <h2 class="card-title">3D Interactive Conformer</h2>
+                <span class="card-subtitle">Real-time WebGL Molecular Dynamics (Ball & Stick / VdW)</span>
+              </div>
+            </div>
+            <div class="viewer-actions">
+              <button class="btn-icon" id="btn-reset-camera" title="Reset Viewport / Camera" onclick="window.resetCamera()">
+                <i data-lucide="rotate-ccw"></i>
+              </button>
+              <button class="btn-icon" id="btn-toggle-spin" title="Toggle Auto-Spin" onclick="window.toggleSpin()">
+                <i data-lucide="refresh-cw"></i>
+              </button>
+              <button class="btn-icon" id="btn-snapshot-3d" title="Take 3D Screenshot" onclick="window.takeSnapshot3D()">
+                <i data-lucide="camera"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- 3Dmol.js Canvas Container -->
+          <div class="viewer-container" id="viewer-container">
+            <div id="mol-3d-viewport" class="mol-3d-viewport"></div>
+            
+            <!-- Loading Indicator Overlay -->
+            <div id="viewer-loading" class="viewer-loading hidden">
+              <div class="spinner"></div>
+              <span>Streaming 3D Conformer from PubChem...</span>
+            </div>
+
+            <!-- Interactive HUD overlay -->
+            <div class="viewer-hud">
+              <span id="atom-count-hud" class="hud-item"><i data-lucide="circle-dot"></i> <span id="hud-atoms">--</span> Atoms</span>
+              <span id="bond-count-hud" class="hud-item"><i data-lucide="git-commit"></i> <span id="hud-bonds">--</span> Bonds</span>
+            </div>
+          </div>
+
+          <!-- 3D Viewer Style Toolbar -->
+          <div class="viewer-controls-bar">
+            <div class="control-group">
+              <span class="control-label">Representation:</span>
+              <div class="button-toggle-group" id="style-toggle-group">
+                <button class="btn-toggle active" data-style="stick" onclick="window.set3DStyle('stick')">Stick</button>
+                <button class="btn-toggle" data-style="ballAndStick" onclick="window.set3DStyle('ballAndStick')">Ball & Stick</button>
+                <button class="btn-toggle" data-style="sphere" onclick="window.set3DStyle('sphere')">Space Fill</button>
+                <button class="btn-toggle" data-style="surface" onclick="window.set3DStyle('surface')">Surface</button>
+              </div>
+            </div>
+            <div class="control-group">
+              <span class="control-label">Background:</span>
+              <button class="btn-toggle" id="bg-toggle-btn" onclick="window.toggleViewerBackground()">Dark / Transparent</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2D Structure Blueprint Card -->
+        <div class="lab-card card-2d-structure">
+          <div class="card-header">
+            <div class="card-title-group">
+              <i data-lucide="fingerprint" class="card-title-icon"></i>
+              <div>
+                <h3 class="card-title">2D Skeletal Blueprint</h3>
+                <span class="card-subtitle">Official IUPAC standard 2D vector depiction from PubChem</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="structure-2d-body">
+            <div class="structure-image-wrapper">
+              <img id="structure-2d-img" src="" alt="2D Chemical Structure" class="structure-2d-image" />
+              <div id="structure-2d-placeholder" class="structure-placeholder">
+                <i data-lucide="flask-conical"></i>
+                <span>Awaiting molecule input...</span>
+              </div>
+            </div>
+
+            <div class="structure-quick-meta">
+              <div class="quick-meta-row">
+                <span class="quick-meta-label">Stereochemistry:</span>
+                <span class="quick-meta-val" id="meta-stereochem">Defined Isomeric</span>
+              </div>
+              <div class="quick-meta-row">
+                <span class="quick-meta-label">Aromatic Rings:</span>
+                <span class="quick-meta-val" id="meta-aromatic">Detected</span>
+              </div>
+              <div class="quick-meta-row">
+                <span class="quick-meta-label">CAS Registry No.:</span>
+                <span class="quick-meta-val font-mono" id="cas-number-value">--</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- DUAL CHEMICAL REGISTRY HUB: ChemSpider (RSC) & PubChem (NIH) -->
+        <div class="lab-card card-dual-registries">
+          <div class="card-header">
+            <div class="card-title-group">
+              <i data-lucide="link-2" class="card-title-icon text-cyan"></i>
+              <div>
+                <h3 class="card-title">Dual Chemical Registry Verification</h3>
+                <span class="card-subtitle">Cross-database synchronization between ChemSpider (RSC) and PubChem (NIH)</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="dual-registry-grid">
+            
+            <!-- ChemSpider Panel -->
+            <div class="registry-subcard chemspider-box">
+              <div class="reg-header">
+                <div class="reg-brand">
+                  <span class="cs-badge">RSC</span>
+                  <span class="reg-title">ChemSpider</span>
+                </div>
+                <span class="reg-status-badge status-verified">
+                  <i data-lucide="check-circle-2"></i> Verified
+                </span>
+              </div>
+              <p class="reg-desc">Royal Society of Chemistry structure repository and chemical synthesis record.</p>
+              
+              <div class="reg-meta-list">
+                <div class="reg-meta-item">
+                  <span class="reg-meta-label">ChemSpider ID (CSID):</span>
+                  <span class="reg-meta-val" id="cs-id-value">--</span>
+                </div>
+                <div class="reg-meta-item">
+                  <span class="reg-meta-label">Authority:</span>
+                  <span class="reg-meta-val">Royal Society of Chemistry</span>
+                </div>
+              </div>
+
+              <a id="chemspider-external-link" href="https://www.chemspider.com" target="_blank" rel="noopener noreferrer" class="btn btn-cs-action">
+                <i data-lucide="external-link"></i>
+                <span>Open in ChemSpider.com</span>
+              </a>
+            </div>
+
+            <!-- PubChem Panel -->
+            <div class="registry-subcard pubchem-box">
+              <div class="reg-header">
+                <div class="reg-brand">
+                  <span class="pc-badge">NIH</span>
+                  <span class="reg-title">PubChem</span>
+                </div>
+                <span class="reg-status-badge status-verified-pubchem">
+                  <i data-lucide="shield-check"></i> Indexed
+                </span>
+              </div>
+              <p class="reg-desc">National Center for Biotechnology Information (NCBI / NIH) biomedical database.</p>
+              
+              <div class="reg-meta-list">
+                <div class="reg-meta-item">
+                  <span class="reg-meta-label">PubChem Compound (CID):</span>
+                  <span class="reg-meta-val text-amber" id="pubchem-cid-value">--</span>
+                </div>
+                <div class="reg-meta-item">
+                  <span class="reg-meta-label">NCBI BioAssay Records:</span>
+                  <span class="reg-meta-val" id="pubchem-bioassays-val">Active Index</span>
+                </div>
+              </div>
+
+              <a id="pubchem-external-link" href="https://pubchem.ncbi.nlm.nih.gov" target="_blank" rel="noopener noreferrer" class="btn btn-pc-action">
+                <i data-lucide="external-link"></i>
+                <span>Open in PubChem (NIH)</span>
+              </a>
+            </div>
+
+          </div>
+        </div>
+
+      </section>
+
+      <!-- Right Column: Nomenclature, IUPAC, Properties & PDF Export -->
+      <section class="intel-column">
+        
+        <!-- Spotlight: Official IUPAC Nomenclature Card -->
+        <div class="lab-card card-iupac-spotlight">
+          <div class="iupac-glow-strip"></div>
+          <div class="card-header">
+            <div class="card-title-group">
+              <i data-lucide="award" class="card-title-icon text-cyan"></i>
+              <div>
+                <span class="eyebrow-tag">Standard Systematic Nomenclature</span>
+                <h2 class="card-title">Official IUPAC Name</h2>
+              </div>
+            </div>
+            <button class="btn btn-copy" id="btn-copy-iupac" onclick="window.copyIUPACName()" title="Copy IUPAC Name">
+              <i data-lucide="copy"></i>
+              <span id="copy-btn-text">Copy IUPAC</span>
+            </button>
+          </div>
+
+          <div class="iupac-display-box">
+            <div class="iupac-name-text" id="iupac-name-display">
+              Awaiting molecule search...
+            </div>
+          </div>
+
+          <!-- Formula & Common Names Banner -->
+          <div class="nomenclature-meta-grid">
+            <div class="meta-item">
+              <span class="meta-label">Primary Common Name</span>
+              <span class="meta-value" id="primary-common-name">--</span>
+            </div>
+            <div class="meta-item">
+              <span class="meta-label">Molecular Formula</span>
+              <span class="meta-value formula-font" id="molecular-formula-display">--</span>
+            </div>
+            <div class="meta-item">
+              <span class="meta-label">Molecular Weight</span>
+              <span class="meta-value" id="molecular-weight-display">-- g/mol</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Downloadable Lab Report Dossier (Action Banner) -->
+        <div class="lab-card card-dossier-action">
+          <div class="dossier-banner-content">
+            <div class="dossier-icon-wrap">
+              <i data-lucide="file-text" class="dossier-icon"></i>
+            </div>
+            <div class="dossier-text">
+              <h3 class="dossier-title">Downloadable Molecule PDF Dossier</h3>
+              <p class="dossier-desc">Generate an authentic, publication-grade analytical certificate certified with ChemSpider CSID, PubChem CID, IUPAC nomenclature, and Lipinski pharmacology metrics.</p>
+            </div>
+            <div class="dossier-btn-wrap">
+              <button class="btn btn-emerald btn-lg" id="btn-download-pdf" onclick="window.generatePDFDossier()">
+                <i data-lucide="download"></i>
+                <span>Download PDF Info</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Physicochemical Descriptors Grid -->
+        <div class="lab-card card-properties">
+          <div class="card-header">
+            <div class="card-title-group">
+              <i data-lucide="bar-chart-2" class="card-title-icon"></i>
+              <div>
+                <h3 class="card-title">Physicochemical Profile & Descriptors</h3>
+                <span class="card-subtitle">Cross-validated parameters from PubChem & ChemSpider</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="properties-grid">
+            <div class="property-tile">
+              <span class="prop-label">LogP (Octanol/Water)</span>
+              <span class="prop-val" id="prop-logp">--</span>
+              <span class="prop-hint">PubChem XLogP / Lipophilicity</span>
+            </div>
+            <div class="property-tile">
+              <span class="prop-label">Polar Surface Area (TPSA)</span>
+              <span class="prop-val" id="prop-tpsa">-- Å²</span>
+              <span class="prop-hint">Membrane permeability</span>
+            </div>
+            <div class="property-tile">
+              <span class="prop-label">H-Bond Donors (HBD)</span>
+              <span class="prop-val" id="prop-hbd">--</span>
+              <span class="prop-hint">Rule of 5 ≤ 5</span>
+            </div>
+            <div class="property-tile">
+              <span class="prop-label">H-Bond Acceptors (HBA)</span>
+              <span class="prop-val" id="prop-hba">--</span>
+              <span class="prop-hint">Rule of 5 ≤ 10</span>
+            </div>
+            <div class="property-tile">
+              <span class="prop-label">Rotatable Bonds</span>
+              <span class="prop-val" id="prop-rotbonds">--</span>
+              <span class="prop-hint">Conformational freedom</span>
+            </div>
+            <div class="property-tile">
+              <span class="prop-label">Exact Monoisotopic Mass</span>
+              <span class="prop-val" id="prop-monomass">-- Da</span>
+              <span class="prop-hint">High-res mass spec</span>
+            </div>
+            <div class="property-tile">
+              <span class="prop-label">Heavy Atom Count</span>
+              <span class="prop-val" id="prop-heavyatoms">--</span>
+              <span class="prop-hint">Non-hydrogen skeletal atoms</span>
+            </div>
+            <div class="property-tile">
+              <span class="prop-label">Compound Complexity</span>
+              <span class="prop-val" id="prop-complexity">--</span>
+              <span class="prop-hint">PubChem topological index</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Lipinski's Rule of 5 & Oral Bioavailability Radar -->
+        <div class="lab-card card-druglikeness">
+          <div class="card-header">
+            <div class="card-title-group">
+              <i data-lucide="shield-check" class="card-title-icon text-emerald"></i>
+              <div>
+                <h3 class="card-title">Lipinski's Rule of 5 (Ro5) Drug-likeness</h3>
+                <span class="card-subtitle">Pharmacokinetic oral bioavailability screen (Pfizer Ro5 criteria)</span>
+              </div>
+            </div>
+            <span class="ro5-status-pill" id="ro5-summary-pill">Checking...</span>
+          </div>
+
+          <div class="ro5-items-list">
+            <!-- MW Criteria -->
+            <div class="ro5-row" id="ro5-row-mw">
+              <div class="ro5-info">
+                <span class="ro5-name">Molecular Weight (MW)</span>
+                <span class="ro5-rule">Target: ≤ 500 Da</span>
+              </div>
+              <div class="ro5-bar-wrap">
+                <div class="ro5-progress-bar" id="ro5-bar-mw" style="width: 0%"></div>
+              </div>
+              <span class="ro5-val-badge" id="ro5-val-mw">-- Da</span>
+              <span class="ro5-verdict" id="ro5-icon-mw"><i data-lucide="check"></i></span>
+            </div>
+
+            <!-- LogP Criteria -->
+            <div class="ro5-row" id="ro5-row-logp">
+              <div class="ro5-info">
+                <span class="ro5-name">Lipophilicity (LogP)</span>
+                <span class="ro5-rule">Target: ≤ 5.0</span>
+              </div>
+              <div class="ro5-bar-wrap">
+                <div class="ro5-progress-bar" id="ro5-bar-logp" style="width: 0%"></div>
+              </div>
+              <span class="ro5-val-badge" id="ro5-val-logp">--</span>
+              <span class="ro5-verdict" id="ro5-icon-logp"><i data-lucide="check"></i></span>
+            </div>
+
+            <!-- HBD Criteria -->
+            <div class="ro5-row" id="ro5-row-hbd">
+              <div class="ro5-info">
+                <span class="ro5-name">Hydrogen Donors (HBD)</span>
+                <span class="ro5-rule">Target: ≤ 5</span>
+              </div>
+              <div class="ro5-bar-wrap">
+                <div class="ro5-progress-bar" id="ro5-bar-hbd" style="width: 0%"></div>
+              </div>
+              <span class="ro5-val-badge" id="ro5-val-hbd">--</span>
+              <span class="ro5-verdict" id="ro5-icon-hbd"><i data-lucide="check"></i></span>
+            </div>
+
+            <!-- HBA Criteria -->
+            <div class="ro5-row" id="ro5-row-hba">
+              <div class="ro5-info">
+                <span class="ro5-name">Hydrogen Acceptors (HBA)</span>
+                <span class="ro5-rule">Target: ≤ 10</span>
+              </div>
+              <div class="ro5-bar-wrap">
+                <div class="ro5-progress-bar" id="ro5-bar-hba" style="width: 0%"></div>
+              </div>
+              <span class="ro5-val-badge" id="ro5-val-hba">--</span>
+              <span class="ro5-verdict" id="ro5-icon-hba"><i data-lucide="check"></i></span>
+            </div>
+
+            <!-- Rotatable Bonds Criteria -->
+            <div class="ro5-row" id="ro5-row-rotb">
+              <div class="ro5-info">
+                <span class="ro5-name">Rotatable Bonds (Veber)</span>
+                <span class="ro5-rule">Target: ≤ 10</span>
+              </div>
+              <div class="ro5-bar-wrap">
+                <div class="ro5-progress-bar" id="ro5-bar-rotb" style="width: 0%"></div>
+              </div>
+              <span class="ro5-val-badge" id="ro5-val-rotb">--</span>
+              <span class="ro5-verdict" id="ro5-icon-rotb"><i data-lucide="check"></i></span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Molecular Identifiers & Line Notations (SMILES, InChIKey) -->
+        <div class="lab-card card-strings">
+          <div class="card-header">
+            <div class="card-title-group">
+              <i data-lucide="code" class="card-title-icon"></i>
+              <div>
+                <h3 class="card-title">Chemical Line Notations</h3>
+                <span class="card-subtitle">Machine-readable structural strings for computational pipelines</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="strings-container">
+            <div class="string-block">
+              <div class="string-header">
+                <span class="string-tag">Canonical SMILES</span>
+                <button class="btn-mini-copy" onclick="window.copyText('canonical-smiles-val')"><i data-lucide="copy"></i> Copy</button>
+              </div>
+              <code class="code-box" id="canonical-smiles-val">--</code>
+            </div>
+
+            <div class="string-block">
+              <div class="string-header">
+                <span class="string-tag">InChIKey (Hashed Unique Identifier)</span>
+                <button class="btn-mini-copy" onclick="window.copyText('inchikey-val')"><i data-lucide="copy"></i> Copy</button>
+              </div>
+              <code class="code-box" id="inchikey-val">--</code>
+            </div>
+
+            <div class="string-block">
+              <div class="string-header">
+                <span class="string-tag">Standard InChI</span>
+                <button class="btn-mini-copy" onclick="window.copyText('inchi-val')"><i data-lucide="copy"></i> Copy</button>
+              </div>
+              <code class="code-box code-scroll" id="inchi-val">--</code>
+            </div>
+          </div>
+        </div>
+
+      </section>
+
+    </main>
+
+    <!-- App Footer -->
+    <footer class="app-footer">
+      <div class="footer-left">
+        <i data-lucide="sparkles" class="footer-icon"></i>
+        <span>chemlab.ai &middot; Dual-Connected with ChemSpider (RSC) & PubChem (NIH/NCBI)</span>
+      </div>
+      <div class="footer-right">
+        <span>Developed & Maintained by <strong>Sanjey Varshan K</strong> (Reg. No: <code>RA2611026050040</code>)</span>
+      </div>
+    </footer>
+
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div id="toast-container" class="toast-container"></div>
+
+  <!-- Main Application Script -->
+  <script src="app.js"></script>
+  <script>
+    lucide.createIcons();
+  </script>
+</body>
+</html>

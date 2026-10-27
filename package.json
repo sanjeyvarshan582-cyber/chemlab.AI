@@ -1,0 +1,20 @@
+{
+  "name": "chemlab-ai",
+  "version": "1.0.0",
+  "description": "chemlab.ai - Next-Generation Cheminformatics Virtual Laboratory with Dual ChemSpider and PubChem Registry Intelligence by Sanjey Varshan K (RA2611026050040)",
+  "author": "Sanjey Varshan K (RA2611026050040)",
+  "scripts": {
+    "start": "python -m http.server 3000",
+    "deploy": "npx vercel --prod",
+    "deploy:temp": "npx vercel deploy --temporary --yes"
+  },
+  "keywords": [
+    "chemlab",
+    "cheminformatics",
+    "chemistry",
+    "pubchem",
+    "chemspider",
+    "3dmol"
+  ],
+  "license": "MIT"
+}
